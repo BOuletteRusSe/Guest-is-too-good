@@ -1,0 +1,154 @@
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from time import sleep
+import random
+import pyautogui
+import keyboard
+from tkinter import Tk, Label, Entry
+from tkinter import ttk
+from pynput.mouse import Listener
+
+driver = webdriver.Chrome(executable_path=r'assets\chromedriver.exe')
+
+correct_words = []
+used_words = []
+focused_letters = ''
+
+def join_room():
+    roomcode = url_entry.get()
+    driver.get(f"https://jklm.fun/{roomcode}")
+
+    ok_button = driver.find_element(By.XPATH, '//button[text()="OK"]')
+    ok_button.click()
+
+    driver.maximize_window()
+
+def find_maximum(lst,start=0,max_word=''):
+    if start == len(lst):
+        return max_word
+    if len(lst[start]) > len(max_word):
+        max_word = lst[start]
+    return find_maximum(lst, start + 1, max_word)
+
+syl_x = 0
+syl_y = 0
+bar_x = 0
+bar_y = 0
+
+def detect_click_bomb():
+    global syl_x, syl_y
+
+    def on_click(x, y, button, pressed):
+        global syl_x, syl_y
+        print(x, y)
+        syl_x = x
+        syl_y = y
+        return False
+        
+    with Listener(on_click=on_click) as listener:
+        listener.join()
+        
+def detect_click_input():
+    global bar_x, bar_y
+    
+    def on_click(x, y, button, pressed):
+        global bar_x, bar_y
+        print(x, y)
+        bar_x = x
+        bar_y = y
+        return False
+        
+    with Listener(on_click=on_click) as listener:
+        listener.join()
+        
+
+def process(e):
+    pyautogui.moveTo(syl_x, syl_y)
+    pyautogui.click(clicks=2)
+    pyautogui.hotkey('ctrl', 'c')
+
+    syll = root.clipboard_get()
+
+    syll_label.config(text=f"Syllabe : {syll}")
+
+    correct_words = []
+    with open(r'assets\words_list.txt', 'r', encoding="utf-8") as f:
+        for line in f:
+            if syll.lower() in line:
+                correct_words += line.split(' ')
+
+    correct_words.sort(key=lambda x: (focused_letters in x, len(x)))
+
+    longest_word = None
+    i = -1
+    for word in correct_words:
+        if word not in used_words:
+            longest_word = correct_words[i]
+            break
+
+    if longest_word:
+        print(longest_word)
+        pyautogui.click(bar_x, bar_y)
+        for i in longest_word:
+            sleep(random.uniform(0.02, 0.12))
+            keyboard.write(i)
+        used_words.append(longest_word)
+    else:
+        print("Aucun mot trouvé pour les lettres spécifiées.")
+
+def reset_used_words():
+    global used_words
+    used_words = []
+
+
+    keyboard.on_press_key('0', process)
+
+def update_focused_letters(*args):
+    global focused_letters
+    focused_letters = letters_entry.get()
+
+
+root = Tk()
+root.title("Guest is too good - Bomb Party")
+root.geometry("300x175")
+root.resizable(False, False)
+
+root.iconbitmap(r"assets\bomb.ico")
+
+code_label = Label(root, text="Code de partie : ")
+code_label.place(x=0, y=18)
+
+url_entry = Entry(root)
+url_entry.place(x=90, y=20)
+
+join_button = ttk.Button(root, text="Rejoindre", command=join_room)
+join_button.place(x=215, y=18)
+
+get_syll_button = ttk.Button(root, text="Tricher", command=process)
+get_syll_button.place(x=75, y=45)
+
+reset_button = ttk.Button(root, text="Réinitialiser", command=reset_used_words)
+reset_button.place(x=150, y=45)
+
+syll_label = Label(root, text="Syllabe : ")
+syll_label.place(x=125, y=75)
+
+letters_label = Label(root, text="Lettres prioritaires :")
+letters_label.place(x=0, y=98)
+
+letters_entry = Entry(root)
+letters_entry.place(x=110, y=100)
+
+bomb_config = ttk.Button(root, text="Bomb Config", command=detect_click_bomb)
+bomb_config.place(x=65, y=125)
+
+input_config = ttk.Button(root, text="Answer Input Config", command=detect_click_input)
+input_config.place(x=150, y=125)
+
+letters_entry.bind("<KeyRelease>", update_focused_letters)
+
+root.attributes('-topmost', 1)
+
+root.mainloop()
+
+driver.quit()
