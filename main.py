@@ -7,8 +7,6 @@ import keyboard
 from tkinter import Tk, Label, Entry
 from tkinter import ttk
 from pynput.mouse import Listener
-from pynput import keyboard
-from pynput.keyboard import Key
 import os
 import json
 
