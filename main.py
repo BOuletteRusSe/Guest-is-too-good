@@ -89,12 +89,14 @@ def process():
                 correct_words += line.split(' ')
 
     correct_words.sort(key=lambda x: (focused_letters in x, len(x)))
+    correct_words.reverse()
+    print(correct_words)
 
     longest_word = None
-    i = -1
     for word in correct_words:
+        print(word)
         if word not in used_words:
-            longest_word = correct_words[i]
+            longest_word = word
             break
 
     if longest_word:
