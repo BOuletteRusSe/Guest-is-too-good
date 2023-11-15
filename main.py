@@ -88,26 +88,33 @@ def process():
             if syll.lower() in line:
                 correct_words += line.split(' ')
 
-    correct_words.sort(key=lambda x: (focused_letters in x, len(x)))
-    correct_words.reverse()
-    print(correct_words)
+    # Find the best word by number of different letters
 
-    longest_word = None
-    for word in correct_words:
-        print(word)
-        if word not in used_words:
-            longest_word = word
-            break
+    words_match = {}
+    max_letters = [None, 0]
+    
+    for w in correct_words:
+        total_letters = 0
+        all_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
-    if longest_word:
-        print(longest_word)
+        for s in w:
+            if s in all_letters:
+                total_letters += 1
+                all_letters.remove(s)
+
+        if total_letters > max_letters[1]:
+            max_letters = [w, total_letters]
+    
+
+    if max_letters[0]:
+        print(max_letters[0])
         for k, v in settings.items():
             if k == "input_position":
                 pyautogui.click(v[0], v[1])
-        for i in longest_word:
+        for i in max_letters[0]:
             sleep(random.uniform(0.02, 0.12))
             keyboard.write(i)
-        used_words.append(longest_word)
+        used_words.append(max_letters[0])
     else:
         print("Aucun mot trouvé pour les lettres spécifiées.")
         
