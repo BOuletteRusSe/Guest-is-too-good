@@ -92,18 +92,28 @@ def process():
 
     words_match = {}
     max_letters = [None, 0]
+    temp = False
+
+    while True:
     
-    for w in correct_words:
-        total_letters = 0
-        all_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
+        for w in correct_words:
+            total_letters = 0
+            all_letters = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z']
 
-        for s in w:
-            if s in all_letters:
-                total_letters += 1
-                all_letters.remove(s)
+            for s in w:
+                if s in all_letters:
+                    total_letters += 1
+                    all_letters.remove(s)
 
-        if total_letters > max_letters[1]:
-            max_letters = [w, total_letters]
+            if total_letters > max_letters[1]:
+                if w not in used_words:
+                    if (focused_letters in w) or temp:
+                        max_letters = [w, total_letters]
+
+        if (max_letters == [None, 0]) and (not temp):
+            temp = True
+        else:
+            break
     
 
     if max_letters[0]:
