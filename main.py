@@ -13,6 +13,7 @@ import json
 # Variables
 used_words = list()
 focused_letters = str()
+keys_rate = str()
 
 # Json
 with open(r"assets\settings.json", "r") as j: 
@@ -70,7 +71,7 @@ def detect_click_input():
 
 def process():
     
-    global used_words
+    global used_words, keys_rate
     
     for k, v in settings.items():
         if k == "bomb_position":
@@ -90,7 +91,6 @@ def process():
 
     # Find the best word by number of different letters
 
-    words_match = {}
     max_letters = [None, 0]
     temp = False
 
@@ -114,15 +114,23 @@ def process():
             temp = True
         else:
             break
-    
 
+    # Write word
     if max_letters[0]:
         print(max_letters[0])
         for k, v in settings.items():
             if k == "input_position":
                 pyautogui.click(v[0], v[1])
         for i in max_letters[0]:
-            sleep(random.uniform(0.02, 0.12))
+            try:
+                k = float(keys_rate)
+                _a_ = k + k / 2
+                _b_ = k / 2
+                sleep(random.uniform(_a_, _b_))
+            except:
+                _a_ = 0.1
+                _b_ = 0.05
+                sleep(random.uniform(_a_, _b_))
             keyboard.write(i)
         used_words.append(max_letters[0])
     else:
@@ -135,6 +143,10 @@ def reset_used_words():
 def update_focused_letters(*args):
     global focused_letters
     focused_letters = letters_entry.get()
+    
+def update_keys_rate(*args):
+    global keys_rate
+    keys_rate = keys_entry.get()
 
 # Updater avec keybind
 keyboard.on_press_key('0', process)
@@ -145,7 +157,7 @@ driver = webdriver.Chrome(executable_path=r'assets\chromedriver.exe')
 # Tkinter
 root = Tk()
 root.title("Guest is too good - Bomb Party")
-root.geometry("400x175")
+root.geometry("400x225")
 root.resizable(False, False)
 root.iconbitmap(r"assets\bomb.ico")
 
@@ -182,11 +194,18 @@ code_label.place(x=0, y=18)
 input_config = ttk.Button(root, text="Answer Input Config", command=detect_click_input)
 input_config.place(x=200, y=125)
 
+keys_label = Label(root, text="Vitesse moyenne de frappe (seconds) :")
+keys_label.place(x=0, y=175)
+
+keys_entry = Entry(root)
+keys_entry.place(x=225, y=175)
+
+keys_entry.bind("<KeyRelease>", update_keys_rate)
 letters_entry.bind("<KeyRelease>", update_focused_letters)
 
 root.attributes('-topmost', 1)
 
-
+# File start
 def main():
 
     # Start code
