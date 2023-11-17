@@ -19,7 +19,7 @@ used_words = list()
 focused_letters = str()
 keys_rate = str()
 root = Tk()
-langue_list = ("French", "English", "Spanish")
+langue_list = ("French", "English", "Spanish", "Deutsch")
 langue = StringVar(root)
 language = "assets/languages_words_list/french_words_list.txt"
 for k, v in settings.items():
