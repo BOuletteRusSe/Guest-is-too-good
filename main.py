@@ -4,20 +4,27 @@ from time import sleep
 import random
 import pyautogui
 import keyboard
-from tkinter import Tk, Label, Entry
+from tkinter import Tk, Label, Entry, StringVar
 from tkinter import ttk
 from pynput.mouse import Listener
 import os
 import json
 
+# Json
+with open(r"assets\settings.json", "r") as j: 
+    settings = json.load(j)
+
 # Variables
 used_words = list()
 focused_letters = str()
 keys_rate = str()
-
-# Json
-with open(r"assets\settings.json", "r") as j: 
-    settings = json.load(j)
+root = Tk()
+langue_list = ("French", "English", "Spanish")
+langue = StringVar(root)
+language = "assets/languages_words_list/french_words_list.txt"
+for k, v in settings.items():
+    if k == "language":
+        default_language = langue_list[v]
     
 # Functions
 def join_room():
@@ -36,11 +43,20 @@ def find_maximum(lst,start=0,max_word=''):
         max_word = lst[start]
     return find_maximum(lst, start + 1, max_word)
 
-# A Optimiser #
-
 def update_json(settings):
     with open(r"assets\settings.json", "w") as j: 
         json.dump(settings, j, indent=4)
+
+def change_langue(*args):
+    global language
+    print(langue.get())
+    language = "assets/languages_words_list/%s_words_list.txt" % (langue.get().lower())
+    for k in settings.keys():
+        if k == "language":
+            settings[k] = langue_list.index(langue.get())
+    update_json(settings)
+
+# A Optimiser #
 
 def detect_click_bomb():
 
@@ -71,7 +87,7 @@ def detect_click_input():
 
 def process():
     
-    global used_words, keys_rate
+    global used_words, keys_rate, language
     
     for k, v in settings.items():
         if k == "bomb_position":
@@ -84,7 +100,7 @@ def process():
     syll_label.config(text=f"Syllabe : {syll}")
 
     correct_words = []
-    with open(r'assets\words_list.txt', 'r', encoding="utf-8") as f:
+    with open(language, 'r', encoding="utf-8") as f:
         for line in f:
             if syll.lower() in line:
                 correct_words += line.split(' ')
@@ -155,50 +171,53 @@ keyboard.on_press_key('0', process)
 driver = webdriver.Chrome(executable_path=r'assets\chromedriver.exe')
 
 # Tkinter
-root = Tk()
 root.title("Guest is too good - Bomb Party")
+root['background']='#35323F'
 root.geometry("400x225")
 root.resizable(False, False)
 root.iconbitmap(r"assets\bomb.ico")
 
-code_label = Label(root, text="Code de partie : ")
-code_label.place(x=0, y=18)
+code_label = Label(root, text="Code de partie : ", bg="#35323F", fg="white")
+code_label.place(x=25, y=18)
 
 url_entry = Entry(root)
-url_entry.place(x=120, y=20)
+url_entry.place(x=125, y=20)
 
 join_button = ttk.Button(root, text="Rejoindre", command=join_room)
-join_button.place(x=287, y=18)
+join_button.place(x=150, y=45)
 
 get_syll_button = ttk.Button(root, text="Tricher", command=process)
-get_syll_button.place(x=100, y=45)
+get_syll_button.place(x=50, y=45)
 
 reset_button = ttk.Button(root, text="Réinitialiser", command=reset_used_words)
-reset_button.place(x=200, y=45)
+reset_button.place(x=250, y=45)
 
-syll_label = Label(root, text="Syllabe : ")
-syll_label.place(x=167, y=75)
+syll_label = Label(root, text="Syllabe : Aucune", bg="#35323F", fg="white")
+syll_label.place(x=150, y=75)
 
-letters_label = Label(root, text="Lettres prioritaires :")
-letters_label.place(x=0, y=98)
+letters_label = Label(root, text="Lettres prioritaires :", bg="#35323F", fg="white")
+letters_label.place(x=15, y=98)
 
 letters_entry = Entry(root)
-letters_entry.place(x=147, y=100)
+letters_entry.place(x=125, y=100)
 
-bomb_config = ttk.Button(root, text="Bomb Config", command=detect_click_bomb)
-bomb_config.place(x=87, y=125)
-
-code_label = Label(root, text="")
-code_label.place(x=0, y=18)
-
-input_config = ttk.Button(root, text="Answer Input Config", command=detect_click_input)
-input_config.place(x=200, y=125)
-
-keys_label = Label(root, text="Vitesse moyenne de frappe (seconds) :")
-keys_label.place(x=0, y=175)
+keys_label = Label(root, text="Vitesse de \nfrappe (secondes) :", bg="#35323F", fg="white")
+keys_label.place(x=15, y=135)
 
 keys_entry = Entry(root)
-keys_entry.place(x=225, y=175)
+keys_entry.place(x=125, y=143)
+
+bomb_config = ttk.Button(root, text="Config bombe", command=detect_click_bomb)
+bomb_config.place(x=285, y=98)
+
+input_config = ttk.Button(root, text="Config entrée texte", command=detect_click_input)
+input_config.place(x=275, y=140)
+
+langue_label = Label(root, text="Langage :", bg="#35323F", fg="white")
+langue_label.place(x=75, y=185)
+
+langue_menu = ttk.OptionMenu(root, langue, default_language, *langue_list, command=change_langue)
+langue_menu.place(x=150, y=185)
 
 keys_entry.bind("<KeyRelease>", update_keys_rate)
 letters_entry.bind("<KeyRelease>", update_focused_letters)

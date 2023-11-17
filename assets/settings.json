@@ -1,10 +1,11 @@
 {
     "bomb_position": [
-        302,
-        121
+        0,
+        0
     ],
     "input_position": [
-        293,
-        104
-    ]
+        0,
+        0
+    ],
+    "language": 0
 }
